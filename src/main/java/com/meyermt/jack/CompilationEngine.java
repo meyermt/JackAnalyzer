@@ -26,6 +26,8 @@ public class CompilationEngine {
     private static final List<String> classDecs = Arrays.asList(new String[] {"static", "field"});
     private static final List<String> subroutineDecs = Arrays.asList(new String[] {"constructor", "function", "method"});
     private static final List<String> statements = Arrays.asList(new String[] {"let", "if", "while", "do", "return"});
+    private static final List<String> ops = Arrays.asList(new String[] {"+", "-", "*", "/", "&", "|", "<", ">", "="});
+    private static final List<String> unaryOps = Arrays.asList(new String[] { "~", "-"});
 
     public CompilationEngine() {
         try {
@@ -120,10 +122,14 @@ public class CompilationEngine {
             compileVarDec(varDec, nodeList);
         }
 
+        compileStatements(subroutineBody, nodeList);
+    }
+
+    private void compileStatements(Element element, NodeList nodeList) {
         String stateNode = nodeList.item(itemInc).getTextContent().trim();
         while (statements.contains(stateNode)) {
             Element statements = doc.createElement("statements");
-            subroutineBody.appendChild(statements);
+            element.appendChild(statements);
 
             if (stateNode.equals("let")) {
                 compileLet(statements, nodeList);
@@ -136,13 +142,131 @@ public class CompilationEngine {
             } else {
                 compileReturn(statements, nodeList);
             }
-
             stateNode = nodeList.item(itemInc).getTextContent().trim();
         }
     }
 
-    private void compileExpression(Element statements, NodeList nodeList) {
+    private void compileReturn(Element element, NodeList nodeList) {
+        Element returnStatement = doc.createElement("returnStatement");
+        element.appendChild(returnStatement);
+        returnStatement.appendChild(nodeList.item(itemInc)); // add return
+        itemInc++;
+        if (nodeList.item(itemInc).getNodeName().equals("identifier")) {
+            compileExpression(returnStatement, nodeList);
+        }
+        returnStatement.appendChild(nodeList.item(itemInc)); // add ;
+        itemInc++;
+    }
 
+    private void compileDo(Element element, NodeList nodeList) {
+        Element doStatement = doc.createElement("doStatement");
+        element.appendChild(doStatement);
+        doStatement.appendChild(nodeList.item(itemInc)); // add do
+        itemInc++;
+        doStatement.appendChild(nodeList.item(itemInc)); // add sub or class or var
+        itemInc++;
+        if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
+            doStatement.appendChild(nodeList.item(itemInc)); // add (
+            itemInc++;
+            compileExpressionList(doStatement, nodeList);
+            doStatement.appendChild(nodeList.item(itemInc)); // add )
+            itemInc++;
+        } else {
+            doStatement.appendChild(nodeList.item(itemInc)); // add .
+            itemInc++;
+            doStatement.appendChild(nodeList.item(itemInc)); // add sub name
+            itemInc++;
+            doStatement.appendChild(nodeList.item(itemInc)); // add (
+            itemInc++;
+            compileExpressionList(doStatement, nodeList);
+            doStatement.appendChild(nodeList.item(itemInc)); // add )
+            itemInc++;
+        }
+    }
+
+    private void compileWhile(Element element, NodeList nodeList) {
+        Element whileStatement = doc.createElement("whileStatement");
+        element.appendChild(whileStatement);
+        whileStatement.appendChild(nodeList.item(itemInc)); // add while
+        itemInc++;
+        whileStatement.appendChild(nodeList.item(itemInc)); // add (
+        itemInc++;
+        compileExpression(whileStatement, nodeList);
+        whileStatement.appendChild(nodeList.item(itemInc)); // add )
+        itemInc++;
+        whileStatement.appendChild(nodeList.item(itemInc)); // add {
+        itemInc++;
+        compileStatements(whileStatement, nodeList);
+        whileStatement.appendChild(nodeList.item(itemInc)); // add }
+        itemInc++;
+    }
+
+    private void compileExpressionList(Element element, NodeList nodeList) {
+        Element expList = doc.createElement("expressionList");
+        element.appendChild(expList);
+        String parenNode = nodeList.item(itemInc).getTextContent().trim();
+        while (!parenNode.equals(")")) {
+            compileExpression(expList, nodeList);
+            String comNode = nodeList.item(itemInc).getTextContent().trim();
+            while (comNode.equals(",")) {
+                compileExpression(expList, nodeList);
+                comNode = nodeList.item(itemInc).getTextContent().trim();
+            }
+        }
+    }
+
+    private void compileExpression(Element statement, NodeList nodeList) {
+        Element expression = doc.createElement("expression");
+        statement.appendChild(expression);
+        compileTerm(expression, nodeList);
+        String op = nodeList.item(itemInc).getTextContent().trim();
+        while (ops.contains(op)) {
+            expression.appendChild(nodeList.item(itemInc)); // add the op
+            itemInc++;
+            compileTerm(expression, nodeList);
+        }
+    }
+
+    private void compileTerm(Element expression, NodeList nodeList) {
+        Element term = doc.createElement("term");
+        expression.appendChild(term);
+        if (unaryOps.contains(nodeList.item(itemInc).getTextContent().trim())) {
+            term.appendChild(nodeList.item(itemInc)); // add unary op
+            itemInc++;
+            compileTerm(term, nodeList);
+        } else if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
+            term.appendChild(nodeList.item(itemInc)); // add (
+            itemInc++;
+            compileExpression(term, nodeList);
+            term.appendChild(nodeList.item(itemInc)); // add )
+            itemInc++;
+        } else {
+            term.appendChild(nodeList.item(itemInc)); // add first part of term
+            itemInc++;
+            if (nodeList.item(itemInc).getTextContent().trim().equals("[")) {
+                compileExpression(term, nodeList);
+                term.appendChild(nodeList.item(itemInc)); // add )
+                itemInc++;
+            } else if (nodeList.item(itemInc).getTextContent().trim().equals(".")) {
+                term.appendChild(nodeList.item(itemInc)); // add .
+                itemInc++;
+                term.appendChild(nodeList.item(itemInc)); // add sub name
+                itemInc++;
+                term.appendChild(nodeList.item(itemInc)); // add (
+                itemInc++;
+                compileExpressionList(term, nodeList);
+                term.appendChild(nodeList.item(itemInc)); // add )
+                itemInc++;
+            } else if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
+                term.appendChild(nodeList.item(itemInc)); // add sub name
+                itemInc++;
+                term.appendChild(nodeList.item(itemInc)); // add (
+                itemInc++;
+                compileExpressionList(term, nodeList);
+                term.appendChild(nodeList.item(itemInc)); // add )
+                itemInc++;
+            }
+        }
     }
 
     private void compileLet(Element statements, NodeList nodeList) {
@@ -157,12 +281,38 @@ public class CompilationEngine {
             itemInc++;
             compileExpression(letStatement, nodeList);
             letStatement.appendChild(nodeList.item(itemInc)); // add ]
+            itemInc++;
         }
-
+        letStatement.appendChild(nodeList.item(itemInc)); // add =
+        itemInc++;
+        compileExpression(letStatement, nodeList);
+        letStatement.appendChild(nodeList.item(itemInc)); // add ;
     }
 
     private void compileIf(Element subroutineBody, NodeList nodeList) {
-
+        Element ifStatement = doc.createElement("ifStatement");
+        subroutineBody.appendChild(ifStatement);
+        ifStatement.appendChild(nodeList.item(itemInc)); // add if
+        itemInc++;
+        ifStatement.appendChild(nodeList.item(itemInc)); // add (
+        itemInc++;
+        compileExpression(ifStatement, nodeList);
+        ifStatement.appendChild(nodeList.item(itemInc)); // add )
+        itemInc++;
+        ifStatement.appendChild(nodeList.item(itemInc)); // add {
+        itemInc++;
+        compileStatements(ifStatement, nodeList);
+        ifStatement.appendChild(nodeList.item(itemInc)); // add }
+        itemInc++;
+        if (nodeList.item(itemInc).getTextContent().trim().equals("else")) {
+            ifStatement.appendChild(nodeList.item(itemInc)); // add if
+            itemInc++;
+            ifStatement.appendChild(nodeList.item(itemInc)); // add {
+            itemInc++;
+            compileStatements(ifStatement, nodeList);
+            ifStatement.appendChild(nodeList.item(itemInc)); // add }
+            itemInc++;
+        }
     }
 
     private void compileVarDec(Element varDec, NodeList nodeList) {
