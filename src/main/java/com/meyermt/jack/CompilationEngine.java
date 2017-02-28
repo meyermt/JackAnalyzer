@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Compiles tokenized elements into fully layered xml components ready to create vm files.
  * Created by michaelmeyer on 2/24/17.
  */
 public class CompilationEngine {
@@ -29,6 +30,9 @@ public class CompilationEngine {
     private static final List<String> ops = Arrays.asList(new String[] {"+", "-", "*", "/", "&", "|", "<", ">", "="});
     private static final List<String> unaryOps = Arrays.asList(new String[] { "~", "-"});
 
+    /**
+     * Instantiates a new Compilation engine.
+     */
     public CompilationEngine() {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -41,6 +45,7 @@ public class CompilationEngine {
         }
     }
 
+    /* helper method that will get empty xml opening and closing tags on separate lines. Needed for TextComparer */
     private void addLineEndingsToEmptyElements() {
         NodeList nodeList = doc.getElementsByTagName("*");
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -50,6 +55,12 @@ public class CompilationEngine {
         }
     }
 
+    /**
+     * Compiles the code for a map entry consisting of a jack filename and its tokenized contents
+     *
+     * @param jackFileToDocument the jack filename to document mapping
+     * @return a map entry of jack filename to XML Document
+     */
     public Map.Entry<String, Document> compile(Map.Entry<String, Document> jackFileToDocument) {
         NodeList nodeList = jackFileToDocument.getValue().getElementsByTagName("*");
         itemInc++; // increment past tokens
@@ -63,6 +74,10 @@ public class CompilationEngine {
         return new AbstractMap.SimpleEntry<>(jackFileToDocument.getKey(), doc);
     };
 
+    /*
+        helper method that will copy a node from the tokenized xml to the compiled one and increment node
+        tokenized node list
+     */
     private Element copyNodeAndInc(NodeList nodeList) {
         Node node = nodeList.item(itemInc);
         Element element = doc.createElement(node.getNodeName());
@@ -72,6 +87,9 @@ public class CompilationEngine {
         return element;
     }
 
+    /*
+        Compiles the class part of a jack class
+     */
     private void compileClass(NodeList nodeList) {
         //root class element already added
         rootElement.appendChild(copyNodeAndInc(nodeList)); // add class
@@ -89,6 +107,9 @@ public class CompilationEngine {
         rootElement.appendChild(copyNodeAndInc(nodeList)); // add }
     }
 
+    /*
+        Compiles the class variable declaration part of a jack class
+     */
     private void compileClassVarDec(NodeList nodeList) {
         Element classVarDec = doc.createElement("classVarDec");
         rootElement.appendChild(classVarDec);
@@ -104,6 +125,9 @@ public class CompilationEngine {
         classVarDec.appendChild(copyNodeAndInc(nodeList)); // add the semi colon
     }
 
+    /*
+        Compiles a subroutine declaration, parameter list, and subroutine body
+     */
     private void compileSubRoutine(NodeList nodeList) {
         Element subroutineDec = doc.createElement("subroutineDec");
         rootElement.appendChild(subroutineDec);
@@ -134,6 +158,9 @@ public class CompilationEngine {
         subroutineBody.appendChild(copyNodeAndInc(nodeList)); // add }
     }
 
+    /*
+        Compiles statements that are executed within a subroutine
+     */
     private void compileStatements(Element element, NodeList nodeList) {
         String stateNode = nodeList.item(itemInc).getTextContent().trim();
         Element statements = doc.createElement("statements");
@@ -155,6 +182,9 @@ public class CompilationEngine {
         }
     }
 
+    /*
+        Compiles return statement at end of subroutine
+     */
     private void compileReturn(Element element, NodeList nodeList) {
         Element returnStatement = doc.createElement("returnStatement");
         element.appendChild(returnStatement);
@@ -165,6 +195,9 @@ public class CompilationEngine {
         returnStatement.appendChild(copyNodeAndInc(nodeList)); // add ;
     }
 
+    /*
+        Compiles do statement
+     */
     private void compileDo(Element element, NodeList nodeList) {
         Element doStatement = doc.createElement("doStatement");
         element.appendChild(doStatement);
@@ -184,6 +217,9 @@ public class CompilationEngine {
         doStatement.appendChild(copyNodeAndInc(nodeList)); // add ;
     }
 
+    /*
+        Compiles a while statement
+     */
     private void compileWhile(Element element, NodeList nodeList) {
         Element whileStatement = doc.createElement("whileStatement");
         element.appendChild(whileStatement);
@@ -196,6 +232,9 @@ public class CompilationEngine {
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add }
     }
 
+    /*
+        Compiles an expression list
+     */
     private void compileExpressionList(Element element, NodeList nodeList) {
         Element expList = doc.createElement("expressionList");
         element.appendChild(expList);
@@ -210,6 +249,9 @@ public class CompilationEngine {
         }
     }
 
+    /*
+        Compiles an expression
+     */
     private void compileExpression(Element statement, NodeList nodeList) {
         Element expression = doc.createElement("expression");
         statement.appendChild(expression);
@@ -222,6 +264,9 @@ public class CompilationEngine {
         }
     }
 
+    /*
+        Compiles a term
+     */
     private void compileTerm(Element expression, NodeList nodeList) {
         Element term = doc.createElement("term");
         expression.appendChild(term);
@@ -253,6 +298,9 @@ public class CompilationEngine {
         }
     }
 
+    /*
+        Compiles a let statement
+     */
     private void compileLet(Element statements, NodeList nodeList) {
         Element letStatement = doc.createElement("letStatement");
         statements.appendChild(letStatement);
@@ -268,6 +316,9 @@ public class CompilationEngine {
         letStatement.appendChild(copyNodeAndInc(nodeList)); // add ;
     }
 
+    /*
+        Compiles an if statement
+     */
     private void compileIf(Element subroutineBody, NodeList nodeList) {
         Element ifStatement = doc.createElement("ifStatement");
         subroutineBody.appendChild(ifStatement);
@@ -286,6 +337,9 @@ public class CompilationEngine {
         }
     }
 
+    /*
+        Compiles the variable declarations of a subroutine
+     */
     private void compileVarDec(Element subroutineBody, NodeList nodeList) {
         Node nodeVar = nodeList.item(itemInc);
         while (nodeVar.getTextContent().trim().equals("var")) {

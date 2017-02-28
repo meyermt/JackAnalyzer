@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Reads .jack files, either singularly or from a directory.
  * Created by michaelmeyer on 2/24/17.
  */
 public class JackFileReader {
@@ -34,9 +35,11 @@ public class JackFileReader {
         return this.inputPath;
     }
 
-    /*
-        Reads the file. Will exit the program if IOException encountered or file is not of .jack extension
-    */
+    /**
+     * Reads file or files and returns the filenames along with their contents.
+     *
+     * @return a map of filenames to their contents as a list of Strings.
+     */
     public Map<String, List<String>> readFileOrFiles() {
         // if the filename doesn't have the .vm extension we will check if it is a directory and if it has VM files
         if (!inputPath.toString().endsWith(JACK_EXT)) {
@@ -68,6 +71,9 @@ public class JackFileReader {
         return null;
     }
 
+    /*
+        helper method to try reading files to lines
+     */
     private Map.Entry<String, List<String>> tryReadingLines(Path filePath) {
         try {
             List<String> fileLines = Files.readAllLines(filePath);
@@ -82,7 +88,7 @@ public class JackFileReader {
     }
 
     /*
-        Removes blank lines, tabs, and comments from code
+        Removes tabs, and comments from code
     */
     private List<String> removeComments(List<String> fileLines) {
         return fileLines.stream()

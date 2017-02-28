@@ -10,8 +10,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -19,6 +17,7 @@ import java.util.Map;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 /**
+ * Writes all XML documents for each file.
  * Created by michaelmeyer on 2/27/17.
  */
 public class JackXMLFileWriter {
@@ -27,11 +26,21 @@ public class JackXMLFileWriter {
     private final static String JACK_EXT = ".jack";
     private final static String XML_EXT = ".xml";
 
+    /**
+     * Instantiates a new Jack xml file writer.
+     *
+     * @param outputPath the output path
+     */
     public JackXMLFileWriter(Path outputPath) {
         this.outputPath = outputPath;
     }
 
 
+    /**
+     * Write doc out to file.
+     *
+     * @param fileNameToXML the file name to xml document mapping
+     */
     public void writeDocOut(Map.Entry<String, Document> fileNameToXML) {
         Document doc = fileNameToXML.getValue();
         String fileName = fileNameToXML.getKey().replaceAll(JACK_EXT, XML_EXT);
@@ -49,6 +58,9 @@ public class JackXMLFileWriter {
         }
     }
 
+    /*
+        Helper method that does all the XML-related writing and formatting for the writer.
+     */
     private void writeXmlOutput(File newOutputFile, Document doc) {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
