@@ -35,8 +35,7 @@ public class JackTokenizer {
         }
     }
 
-    public Function<Map.Entry<String, List<String>>, Map.Entry<String, Document>> tokenize = (jackFileToLines) -> {
-
+    public Map.Entry<String, Document> tokenize(Map.Entry<String, List<String>> jackFileToLines) {
             List<String> unblockedLines = removeBlockComments(jackFileToLines.getValue());
             unblockedLines.stream()
                 .flatMap(line -> tokenizeLine(line))

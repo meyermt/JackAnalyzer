@@ -24,12 +24,16 @@ public class JackAnalyzer {
         JackFileReader reader = new JackFileReader(args[0]);
         Map<String, List<String>> cleanFilesAndLines = reader.readFileOrFiles();
 
-        JackTokenizer tokenizer = new JackTokenizer();
-        CompilationEngine engine = new CompilationEngine();
         cleanFilesAndLines.entrySet().stream()
-                .map(tokenizer.tokenize)
+                .map(file -> {
+                    JackTokenizer tokenizer = new JackTokenizer();
+                    return tokenizer.tokenize(file);
+                })
                 .peek(doc -> writeDocSysOut(doc.getValue()))
-                .map(engine.compile)
+                .map(doc -> {
+                    CompilationEngine engine = new CompilationEngine();
+                    return engine.compile(doc);
+                })
                 .forEach(entry -> writeDocSysOut(entry.getValue()));
 
     }

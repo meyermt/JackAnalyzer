@@ -19,6 +19,7 @@ import java.util.function.Function;
  */
 public class CompilationEngine {
 
+    private DocumentBuilder docBuilder;
     private Document doc;
     private Element rootElement;
     private int itemInc = 0;
@@ -32,7 +33,7 @@ public class CompilationEngine {
     public CompilationEngine() {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            docBuilder = docFactory.newDocumentBuilder();
             doc = docBuilder.newDocument();
             rootElement = doc.createElement("class");
             doc.appendChild(rootElement);
@@ -45,12 +46,12 @@ public class CompilationEngine {
         NodeList nodeList = doc.getElementsByTagName("*");
         for (int i = 0; i < nodeList.getLength(); i++) {
             if (nodeList.item(i).getTextContent().trim().equals("")) {
-                nodeList.item(i).setTextContent("\r\n");
+                nodeList.item(i).setTextContent(" ");
             }
         }
     }
 
-    public Function<Map.Entry<String, Document>, Map.Entry<String, Document>> compile = (jackFileToDocument) -> {
+    public Map.Entry<String, Document> compile(Map.Entry<String, Document> jackFileToDocument) {
         NodeList nodeList = jackFileToDocument.getValue().getElementsByTagName("*");
         itemInc++; // increment past tokens
         Node node = nodeList.item(itemInc);
@@ -59,6 +60,7 @@ public class CompilationEngine {
         } else {
             throw new RuntimeException("Should be processing class element");
         }
+        addLineEndingsToEmptyElements();
         return new AbstractMap.SimpleEntry<>(jackFileToDocument.getKey(), doc);
     };
 
@@ -158,7 +160,7 @@ public class CompilationEngine {
         Element returnStatement = doc.createElement("returnStatement");
         element.appendChild(returnStatement);
         returnStatement.appendChild(copyNodeAndInc(nodeList)); // add return
-        if (nodeList.item(itemInc).getNodeName().equals("identifier")) {
+        if (!nodeList.item(itemInc).getTextContent().trim().equals(";")) {
             compileExpression(returnStatement, nodeList);
         }
         returnStatement.appendChild(copyNodeAndInc(nodeList)); // add ;
@@ -202,9 +204,10 @@ public class CompilationEngine {
         while (!parenNode.equals(")")) {
             compileExpression(expList, nodeList);
             String comNode = nodeList.item(itemInc).getTextContent().trim();
-            while (comNode.equals(",")) {
-                compileExpression(expList, nodeList);
-                comNode = nodeList.item(itemInc).getTextContent().trim();
+            if (comNode.equals(",")) {
+                expList.appendChild(copyNodeAndInc(nodeList));
+                //compileExpression(expList, nodeList);
+                //comNode = nodeList.item(itemInc).getTextContent().trim();
             }
             parenNode = nodeList.item(itemInc).getTextContent().trim();
         }
