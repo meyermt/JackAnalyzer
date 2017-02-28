@@ -1,11 +1,7 @@
 package com.meyermt.jack;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -21,34 +17,38 @@ import java.util.Map;
  */
 public class JackAnalyzer {
 
+    static int counter = 0;
+
     public static void main(String[] args) {
 
-        System.out.println(args[0]);
         JackFileReader reader = new JackFileReader(args[0]);
         Map<String, List<String>> cleanFilesAndLines = reader.readFileOrFiles();
 
         JackTokenizer tokenizer = new JackTokenizer();
         CompilationEngine engine = new CompilationEngine();
-        System.out.println("running");
         cleanFilesAndLines.entrySet().stream()
                 .map(tokenizer.tokenize)
+                .peek(doc -> writeDocSysOut(doc.getValue()))
                 .map(engine.compile)
                 .forEach(entry -> writeDocSysOut(entry.getValue()));
 
     }
 
-    private static void writeDocSysOut(Document doc) {
+    public static void writeDocSysOut(Document doc) {
         // write the content into xml file
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File("mainT.xml"));
+            StreamResult result = new StreamResult(new File("mainT" + counter + ".xml"));
             //StreamResult result = new StreamResult(System.out);
             transformer.setOutputProperty("omit-xml-declaration", "yes");
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.METHOD, "html");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             transformer.transform(source, result);
+            counter++;
         } catch (TransformerException e) {
 
         }
