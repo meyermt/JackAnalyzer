@@ -12,7 +12,6 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Created by michaelmeyer on 2/24/17.
@@ -206,8 +205,6 @@ public class CompilationEngine {
             String comNode = nodeList.item(itemInc).getTextContent().trim();
             if (comNode.equals(",")) {
                 expList.appendChild(copyNodeAndInc(nodeList));
-                //compileExpression(expList, nodeList);
-                //comNode = nodeList.item(itemInc).getTextContent().trim();
             }
             parenNode = nodeList.item(itemInc).getTextContent().trim();
         }

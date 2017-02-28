@@ -140,28 +140,6 @@ public class JackTokenizer {
         rootElement.appendChild(identifier);
     }
 
-//    private String replaceStringXmlFriendly(String token) {
-//        String xmlFriendly = "";
-//        for (int i = 0; i < token.length(); i++) {
-//            xmlFriendly += replaceXmlFriendly(token.substring(i, i + 1));
-//        }
-//        return xmlFriendly;
-//    }
-//
-//    private String replaceXmlFriendly(String token) {
-//        if (token.equals("<")) {
-//            return "&lt;";
-//        } else if (token.equals(">")) {
-//            return "&gt;";
-//        } else if (token.equals("&")) {
-//            return "&amp;";
-//        } else if (token.equals("\"")) {
-//            return "&quot;";
-//        } else {
-//            return token;
-//        }
-//    }
-
     private static List<String> removeBlockComments(List<String> blockedLines) {
         List<String> unBlockedLines = new ArrayList<>();
         boolean blockStarted = false;
