@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fe6df3c0-f6d8-47e9-ae56-115b95b1f8e6" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/SymbolTable.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/VMProducer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/CompilationEngine.java" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/CompilationEngine.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/JackAnalyzer.java" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/JackAnalyzer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/JackXMLFileWriter.java" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/JackXMLFileWriter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/SymbolTable.java" afterPath="$PROJECT_DIR$/src/main/java/com/meyermt/jack/SymbolTable.java" />
     </list>
     <ignored path="JackAnalyzer.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -59,8 +55,8 @@
       <file leaf-file-name="CompilationEngine.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/CompilationEngine.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="148" column="0" selection-start-line="148" selection-start-column="0" selection-end-line="148" selection-end-column="0" />
+            <state relative-caret-position="188">
+              <caret line="394" column="106" selection-start-line="394" selection-start-column="106" selection-end-line="394" selection-end-column="106" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -83,7 +79,7 @@
       <file leaf-file-name="VMProducer.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/VMProducer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="281">
+            <state relative-caret-position="341">
               <caret line="23" column="80" selection-start-line="23" selection-start-column="80" selection-end-line="23" selection-end-column="80" />
               <folding />
             </state>
@@ -93,8 +89,8 @@
       <file leaf-file-name="SymbolTable.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/SymbolTable.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="69" column="26" selection-start-line="69" selection-start-column="26" selection-end-line="69" selection-end-column="26" />
+            <state relative-caret-position="175">
+              <caret line="84" column="42" selection-start-line="84" selection-start-column="42" selection-end-line="84" selection-end-column="42" />
               <folding />
             </state>
           </provider>
@@ -701,12 +697,12 @@
       <workItem from="1487993788250" duration="32727000" />
       <workItem from="1488241687086" duration="11601000" />
       <workItem from="1488583668130" duration="1025000" />
-      <workItem from="1488940254276" duration="36278000" />
+      <workItem from="1488940254276" duration="40734000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="81631000" />
+    <option name="totallyTimeSpent" value="86087000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1366" height="768" extended-state="0" />
@@ -948,14 +944,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/VMProducer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="23" column="80" selection-start-line="23" selection-start-column="80" selection-end-line="23" selection-end-column="80" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/JackXMLFileWriter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -976,18 +964,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/VMProducer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="341">
+          <caret line="23" column="80" selection-start-line="23" selection-start-column="80" selection-end-line="23" selection-end-column="80" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/SymbolTable.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="69" column="26" selection-start-line="69" selection-start-column="26" selection-end-line="69" selection-end-column="26" />
+        <state relative-caret-position="175">
+          <caret line="84" column="42" selection-start-line="84" selection-start-column="42" selection-end-line="84" selection-end-column="42" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/meyermt/jack/CompilationEngine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="148" column="0" selection-start-line="148" selection-start-column="0" selection-end-line="148" selection-end-column="0" />
+        <state relative-caret-position="188">
+          <caret line="394" column="106" selection-start-line="394" selection-start-column="106" selection-end-line="394" selection-end-column="106" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

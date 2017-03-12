@@ -75,10 +75,6 @@ public class CompilationEngine {
             throw new RuntimeException("Should be processing class element");
         }
         addLineEndingsToEmptyElements();
-//        vmCode.stream().forEach(line -> {
-//            System.out.println(line);
-//        });
-        //return new AbstractMap.SimpleEntry<>(jackFileToDocument.getKey(), doc);
         return new AbstractMap.SimpleEntry<>(className, vmCode);
     };
 
@@ -131,10 +127,12 @@ public class CompilationEngine {
         Compiles the class variable declaration part of a jack class
      */
     private void compileClassVarDec(NodeList nodeList) {
-        constructorFieldCount++;
         Element classVarDec = doc.createElement("classVarDec");
         rootElement.appendChild(classVarDec);
         String kind = getNodeTextValue(nodeList);
+        if (kind.equals("field")) {
+            constructorFieldCount++;
+        }
         classVarDec.appendChild(copyNodeAndInc(nodeList)); // add keyword
         String type = getNodeTextValue(nodeList);
         classVarDec.appendChild(copyNodeAndInc(nodeList)); // add type
@@ -143,7 +141,9 @@ public class CompilationEngine {
         classVarDec.appendChild(copyNodeAndInc(nodeList)); // add first var name
         Node node = nodeList.item(itemInc);
         while (node.getTextContent().trim().equals(",")) {
-            constructorFieldCount++;
+            if (kind.equals("field")) {
+                constructorFieldCount++;
+            }
             classVarDec.appendChild(copyNodeAndInc(nodeList)); // add the comma symbol
             name = getNodeTextValue(nodeList);
             classTable.addNewItem(name, type, kind);
@@ -162,6 +162,9 @@ public class CompilationEngine {
         rootElement.appendChild(subroutineDec);
 
         String subType = getNodeTextValue(nodeList);
+        if (subType.contains("method")) {
+            subTable.addNewItem(className, "class", "argument");
+        }
         subroutineDec.appendChild(copyNodeAndInc(nodeList)); // add keyword
         subroutineDec.appendChild(copyNodeAndInc(nodeList)); // add void or type
         String functionName = getNodeTextValue(nodeList);
@@ -253,7 +256,7 @@ public class CompilationEngine {
         if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
             vmCode.add("push pointer 0");
             doStatement.appendChild(copyNodeAndInc(nodeList)); // add (
-            compileExpressionList(doStatement, nodeList, subTable, expListCount);
+            expListCount = compileExpressionList(doStatement, nodeList, subTable, expListCount);
             expListCount++; // add 1 for the this
             vmCode.add("call " + className + "." + maybeClassOrSub + " " + expListCount);
             doStatement.appendChild(copyNodeAndInc(nodeList)); // add )
@@ -266,15 +269,15 @@ public class CompilationEngine {
             }
             doStatement.appendChild(copyNodeAndInc(nodeList)); // add sub name
             doStatement.appendChild(copyNodeAndInc(nodeList)); // add (
-            compileExpressionList(doStatement, nodeList, subTable, expListCount);
+            expListCount = compileExpressionList(doStatement, nodeList, subTable, expListCount);
             if (subTable.hasItem(maybeClassOrSub, classTable)) {
                 vmCode.add("call " + subTable.getType(maybeClassOrSub, classTable) + "." + sub + " " + expListCount);
             } else {
                 vmCode.add("call " + maybeClassOrSub + "." + sub + " " + expListCount);
             }
             doStatement.appendChild(copyNodeAndInc(nodeList)); // add )
-            vmCode.add("pop temp 0");
         }
+        vmCode.add("pop temp 0");
         doStatement.appendChild(copyNodeAndInc(nodeList)); // add ;
     }
 
@@ -282,27 +285,28 @@ public class CompilationEngine {
         Compiles a while statement
      */
     private void compileWhile(Element element, NodeList nodeList, SymbolTable subTable) {
+        int thisWhile = whileInc;
+        whileInc++;
         Element whileStatement = doc.createElement("whileStatement");
-        vmCode.add("label WHILE_EXP" + whileInc);
+        vmCode.add("label WHILE_EXP" + thisWhile);
         element.appendChild(whileStatement);
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add while
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add (
         compileExpression(whileStatement, nodeList, subTable);
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add )
         vmCode.add("not");
-        vmCode.add("if-goto WHILE_END" + whileInc);
+        vmCode.add("if-goto WHILE_END" + thisWhile);
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add {
         compileStatements(whileStatement, nodeList, subTable);
         whileStatement.appendChild(copyNodeAndInc(nodeList)); // add }
-        vmCode.add("goto WHILE_EXP" + whileInc);
-        vmCode.add("label WHILE_END" + whileInc);
-        whileInc++;
+        vmCode.add("goto WHILE_EXP" + thisWhile);
+        vmCode.add("label WHILE_END" + thisWhile);
     }
 
     /*
         Compiles an expression list
      */
-    private void compileExpressionList(Element element, NodeList nodeList, SymbolTable subTable, int expListCount) {
+    private int compileExpressionList(Element element, NodeList nodeList, SymbolTable subTable, int expListCount) {
         Element expList = doc.createElement("expressionList");
         element.appendChild(expList);
         String parenNode = nodeList.item(itemInc).getTextContent().trim();
@@ -315,6 +319,7 @@ public class CompilationEngine {
             }
             parenNode = nodeList.item(itemInc).getTextContent().trim();
         }
+        return expListCount;
     }
 
     /*
@@ -358,12 +363,11 @@ public class CompilationEngine {
         Element term = doc.createElement("term");
         int expListCount = 0;
         expression.appendChild(term);
-        boolean isUnary = false;
-        String unary = "";
         if (unaryOps.contains(nodeList.item(itemInc).getTextContent().trim())) {
-            unary = getNodeTextValue(nodeList);
+            String unary = getNodeTextValue(nodeList);
             term.appendChild(copyNodeAndInc(nodeList)); // add unary op
             compileTerm(term, nodeList, subTable);
+            processUnary(unary);
         } else if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
             term.appendChild(copyNodeAndInc(nodeList)); // add (
             compileExpression(term, nodeList, subTable);
@@ -386,19 +390,21 @@ public class CompilationEngine {
                 term.appendChild(copyNodeAndInc(nodeList)); // add .
                 String subName;
                 if (subTable.hasItem(maybeSubName, classTable)) {
-                    subName = subTable.getType(maybeSubName, classTable);
+                    expListCount++;
+                    vmCode.add("push " + subTable.getKind(maybeSubName, classTable) + " " + subTable.getIndex(maybeSubName, classTable));
+                    subName = subTable.getType(maybeSubName, classTable) + "." + getNodeTextValue(nodeList);
                 } else {
                     subName = maybeSubName + "." + getNodeTextValue(nodeList);
                 }
                 term.appendChild(copyNodeAndInc(nodeList)); // add sub name
                 term.appendChild(copyNodeAndInc(nodeList)); // add (
-                compileExpressionList(term, nodeList, subTable, expListCount);
+                expListCount = compileExpressionList(term, nodeList, subTable, expListCount);
                 term.appendChild(copyNodeAndInc(nodeList)); // add )
                 vmCode.add("call " + subName + " " + expListCount);
             } else if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
                 term.appendChild(copyNodeAndInc(nodeList)); // add sub name
                 term.appendChild(copyNodeAndInc(nodeList)); // add (
-                compileExpressionList(term, nodeList, subTable, expListCount);
+                expListCount = compileExpressionList(term, nodeList, subTable, expListCount);
                 term.appendChild(copyNodeAndInc(nodeList)); // add )
                 vmCode.add("call " + maybeSubName + " " + expListCount);
             } else {
@@ -411,8 +417,10 @@ public class CompilationEngine {
                     if (strTerm.equals("null") || strTerm.equals("false")) {
                         vmCode.add("push constant 0");
                     } else if (strTerm.equals("true")) {
-                        vmCode.add("push constant 1");
-                        vmCode.add("neg");
+                        vmCode.add("push constant 0");
+                        vmCode.add("not");
+                    } else if (strTerm.equals("this")) {
+                        vmCode.add("push pointer 0");
                     }
                 } else if (subTable.hasItem(strTerm, classTable)) {
                     vmCode.add("push " + subTable.getKind(strTerm, classTable) + " " + subTable.getIndex(strTerm, classTable));
@@ -422,15 +430,18 @@ public class CompilationEngine {
                 }
             }
         }
-        if (isUnary && unary.equals("~")) {
+    }
+
+    private void processUnary(String unary) {
+        if (unary.equals("~")) {
             vmCode.add("not");
-        } else if (isUnary && unary.equals("-")) {
+        } else if (unary.equals("-")) {
             vmCode.add("neg");
         }
     }
 
     private void writeVMForStringConstant(String stringConst) {
-        int numChars = stringConst.length() + 1;
+        int numChars = stringConst.length();
         vmCode.add("push constant " + numChars);
         vmCode.add("call String.new 1");
         for (char s : stringConst.toCharArray()) {
@@ -480,26 +491,31 @@ public class CompilationEngine {
         Compiles an if statement
      */
     private void compileIf(Element subroutineBody, NodeList nodeList, SymbolTable subTable) {
+        int thisIf = ifInc;
+        ifInc++;
         Element ifStatement = doc.createElement("ifStatement");
         subroutineBody.appendChild(ifStatement);
         ifStatement.appendChild(copyNodeAndInc(nodeList)); // add if
         ifStatement.appendChild(copyNodeAndInc(nodeList)); // add (
         compileExpression(ifStatement, nodeList, subTable);
-        vmCode.add("if-goto IF_TRUE" + ifInc);
-        vmCode.add("goto IF_FALSE" + ifInc);
-        vmCode.add("label IF_TRUE" + ifInc);
+        vmCode.add("if-goto IF_TRUE" + thisIf);
+        vmCode.add("goto IF_FALSE" + thisIf);
+        vmCode.add("label IF_TRUE" + thisIf);
         ifStatement.appendChild(copyNodeAndInc(nodeList)); // add )
         ifStatement.appendChild(copyNodeAndInc(nodeList)); // add {
         compileStatements(ifStatement, nodeList, subTable);
         ifStatement.appendChild(copyNodeAndInc(nodeList)); // add }
-        vmCode.add("label IF_FALSE" + ifInc);
         if (nodeList.item(itemInc).getTextContent().trim().equals("else")) {
+            vmCode.add("goto IF_END" + thisIf);
+            vmCode.add("label IF_FALSE" + thisIf);
             ifStatement.appendChild(copyNodeAndInc(nodeList)); // add if
             ifStatement.appendChild(copyNodeAndInc(nodeList)); // add {
             compileStatements(ifStatement, nodeList, subTable);
             ifStatement.appendChild(copyNodeAndInc(nodeList)); // add }
+            vmCode.add("label IF_END" + thisIf);
+        } else {
+            vmCode.add("label IF_FALSE" + thisIf);
         }
-        ifInc++;
     }
 
     /*

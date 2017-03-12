@@ -83,7 +83,7 @@ public class SymbolTable {
                 .findFirst();
 
         if (higherTable != null && !index.isPresent()) {
-            return higherTable.getIndex(varName, null);
+            return higherTable.getType(varName, null);
         } else {
             return index.orElseThrow(() -> new RuntimeException("Unable to retrieve type for: " + varName));
         }
