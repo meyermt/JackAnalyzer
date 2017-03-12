@@ -23,7 +23,7 @@ import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
  * Writes all XML documents for each file.
  * Created by michaelmeyer on 2/27/17.
  */
-public class JackXMLFileWriter {
+public class JackVMWriter {
 
     private final Path outputPath;
     private final static String JACK_EXT = ".jack";
@@ -35,7 +35,7 @@ public class JackXMLFileWriter {
      *
      * @param outputPath the output path
      */
-    public JackXMLFileWriter(Path outputPath) {
+    public JackVMWriter(Path outputPath) {
         this.outputPath = outputPath;
     }
 

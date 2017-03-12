@@ -1,6 +1,6 @@
-# Jack Analyzer
+# Jack Compiler
 
-This program will take a .jack input file or directory with .jack files and output parsed xml of the tokenized elements of those files (in the same directory).
+This program will take a .jack input file or directory with .jack files and output compiled .vm files.
 
 ## How to Run the Program
 
@@ -10,7 +10,7 @@ Another requirement for running this program is that it be kept in the same fold
 
 1. Unzip the contents of the .zip file
 2. From the root directory, enter `javac -d bin src/main/java/com/meyermt/jack/*.java` to compile the project
-3. Then run `java -cp bin com.meyermt.jack.JackAnalyzer <path>/<filename.jack>` if it is one file or `java -cp bin com.meyermt.jack.JackAnalyzer <path>` if it is a directory of more than one file.
-4. The program produces the xml files in the same directory, so please note, as it will overwrite other xml files if they exist.
-5. Verify file output with TextComparer utility.
+3. Then run `java -cp bin com.meyermt.jack.JackCompiler <path>/<filename.jack>` if it is one file or `java -cp bin com.meyermt.jack.JackCompiler <path>` if it is a directory of more than one file.
+4. The program produces the vm files in the same directory, so please note, as it will overwrite other vm files if they exist.
+5. Verify file output by running in your favorite VMEmulator.
 

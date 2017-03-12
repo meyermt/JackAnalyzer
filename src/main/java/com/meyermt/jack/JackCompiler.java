@@ -8,7 +8,7 @@ import java.util.Map;
  * compilation engine to create xml. Finally, passes all filenames and their XML documents to the writer.
  * Created by michaelmeyer on 2/24/17.
  */
-public class JackAnalyzer {
+public class JackCompiler {
 
     /**
      * The entry point of this application. Takes filename or dir args.
@@ -19,7 +19,7 @@ public class JackAnalyzer {
 
         JackFileReader reader = new JackFileReader(args[0]);
         Map<String, List<String>> cleanFilesAndLines = reader.readFileOrFiles();
-        JackXMLFileWriter writer = new JackXMLFileWriter(reader.getInputPath());
+        JackVMWriter writer = new JackVMWriter(reader.getInputPath());
 
         cleanFilesAndLines.entrySet().stream()
                 .map(file -> {

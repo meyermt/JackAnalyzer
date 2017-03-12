@@ -49,16 +49,6 @@ public class CompilationEngine {
         }
     }
 
-    /* helper method that will get empty xml opening and closing tags on separate lines. Needed for TextComparer */
-    private void addLineEndingsToEmptyElements() {
-        NodeList nodeList = doc.getElementsByTagName("*");
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            if (nodeList.item(i).getTextContent().trim().equals("")) {
-                nodeList.item(i).setTextContent(" ");
-            }
-        }
-    }
-
     /**
      * Compiles the code for a map entry consisting of a jack filename and its tokenized contents
      *
@@ -74,7 +64,6 @@ public class CompilationEngine {
         } else {
             throw new RuntimeException("Should be processing class element");
         }
-        addLineEndingsToEmptyElements();
         return new AbstractMap.SimpleEntry<>(className, vmCode);
     };
 
