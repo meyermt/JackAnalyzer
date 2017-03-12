@@ -352,6 +352,8 @@ public class CompilationEngine {
         Element term = doc.createElement("term");
         int expListCount = 0;
         expression.appendChild(term);
+        //System.out.println("current node value is " + getNodeTextValue(nodeList));
+        //System.out.println("get current node type is " + getNodeTypeValue(nodeList));
         if (unaryOps.contains(nodeList.item(itemInc).getTextContent().trim())) {
             String unary = getNodeTextValue(nodeList);
             term.appendChild(copyNodeAndInc(nodeList)); // add unary op
@@ -367,23 +369,25 @@ public class CompilationEngine {
             maybeSubName = strTerm;
             term.appendChild(copyNodeAndInc(nodeList)); // add first part of term
             if (nodeList.item(itemInc).getTextContent().trim().equals("[")) {
+                String savedSubName = maybeSubName;
                 term.appendChild(copyNodeAndInc(nodeList)); // add [
                 compileExpression(term, nodeList, subTable);
                 term.appendChild(copyNodeAndInc(nodeList)); // add ]
                 //operations for post-array. should have two terms on stack
-                vmCode.add("push " + subTable.getKind(maybeSubName, classTable) + " " + subTable.getIndex(maybeSubName, classTable));
+                vmCode.add("push " + subTable.getKind(savedSubName, classTable) + " " + subTable.getIndex(savedSubName, classTable));
                 vmCode.add("add");
                 vmCode.add("pop pointer 1");
                 vmCode.add("push that 0");
             } else if (nodeList.item(itemInc).getTextContent().trim().equals(".")) {
+                String savedSubName = maybeSubName;
                 term.appendChild(copyNodeAndInc(nodeList)); // add .
                 String subName;
-                if (subTable.hasItem(maybeSubName, classTable)) {
+                if (subTable.hasItem(savedSubName, classTable)) {
                     expListCount++;
-                    vmCode.add("push " + subTable.getKind(maybeSubName, classTable) + " " + subTable.getIndex(maybeSubName, classTable));
-                    subName = subTable.getType(maybeSubName, classTable) + "." + getNodeTextValue(nodeList);
+                    vmCode.add("push " + subTable.getKind(savedSubName, classTable) + " " + subTable.getIndex(savedSubName, classTable));
+                    subName = subTable.getType(savedSubName, classTable) + "." + getNodeTextValue(nodeList);
                 } else {
-                    subName = maybeSubName + "." + getNodeTextValue(nodeList);
+                    subName = savedSubName + "." + getNodeTextValue(nodeList);
                 }
                 term.appendChild(copyNodeAndInc(nodeList)); // add sub name
                 term.appendChild(copyNodeAndInc(nodeList)); // add (
@@ -391,11 +395,12 @@ public class CompilationEngine {
                 term.appendChild(copyNodeAndInc(nodeList)); // add )
                 vmCode.add("call " + subName + " " + expListCount);
             } else if (nodeList.item(itemInc).getTextContent().trim().equals("(")) {
+                String savedSubName = maybeSubName;
                 term.appendChild(copyNodeAndInc(nodeList)); // add sub name
                 term.appendChild(copyNodeAndInc(nodeList)); // add (
                 expListCount = compileExpressionList(term, nodeList, subTable, expListCount);
                 term.appendChild(copyNodeAndInc(nodeList)); // add )
-                vmCode.add("call " + maybeSubName + " " + expListCount);
+                vmCode.add("call " + savedSubName + " " + expListCount);
             } else {
                 // just a term or start to a subroutine call
                 if (termType.equals("integerConstant")) {

@@ -128,13 +128,18 @@ public class JackTokenizer {
      */
     private String spaceOutSymbols(String line) {
         StringBuilder spacedOutLine = new StringBuilder();
+        boolean isStringLiteral = false;
         for (int i = 0; i < line.length(); i++) {
-            if (symbols.contains(line.substring(i, i + 1))) {
+            String s = line.substring(i, i + 1);
+            if (s.equals("\"")) {
+                isStringLiteral = !isStringLiteral;
+            }
+            if (symbols.contains(s) && !isStringLiteral) {
                 spacedOutLine.append(" ");
-                spacedOutLine.append(line.substring(i, i + 1));
+                spacedOutLine.append(s);
                 spacedOutLine.append(" ");
             } else {
-                spacedOutLine.append(line.substring(i, i + 1));
+                spacedOutLine.append(s);
             }
         }
         return spacedOutLine.toString();
