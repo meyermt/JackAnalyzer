@@ -30,6 +30,7 @@ public class JackAnalyzer {
                     CompilationEngine engine = new CompilationEngine();
                     return engine.compile(doc);
                 })
-                .forEach(writer::writeDocOut);
+                //.forEach(writer::writeDocOut);
+                .forEach(writer::writeVMOut);
     }
 }

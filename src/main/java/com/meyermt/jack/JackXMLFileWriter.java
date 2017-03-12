@@ -10,8 +10,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -25,6 +28,7 @@ public class JackXMLFileWriter {
     private final Path outputPath;
     private final static String JACK_EXT = ".jack";
     private final static String XML_EXT = ".xml";
+    private final static String VM_EXT = ".vm";
 
     /**
      * Instantiates a new Jack xml file writer.
@@ -55,6 +59,35 @@ public class JackXMLFileWriter {
             writeXmlOutput(newOutputFile, doc);
         } catch (IOException e) {
             throw new RuntimeException("Unable to create new file to write to for file " + fileName, e);
+        }
+    }
+
+    public void writeVMOut(Map.Entry<String, List<String>> classToVMLines) {
+        String fileName = outputPath.getFileName().toString();
+        String className = classToVMLines.getKey();
+        List<String> vmCode = classToVMLines.getValue();
+        if (outputPath.toString().endsWith(JACK_EXT)) {
+            String outputFileName = fileName.replace(JACK_EXT, VM_EXT);
+            try {
+                String outputDir = outputPath.toRealPath(NOFOLLOW_LINKS).getParent().toString();
+                Path outputPath = Paths.get(outputDir, outputFileName);
+                Files.write(outputPath, vmCode, Charset.defaultCharset());
+            } catch (IOException e) {
+                System.out.println("Issue encountered writing output file for: " + outputFileName);
+                e.printStackTrace();
+                System.exit(1);
+            }
+        } else {
+            String outputFileName = className.concat(VM_EXT);
+            try {
+                String outputDir = outputPath.toRealPath(NOFOLLOW_LINKS).toString();
+                Path outputPath = Paths.get(outputDir, outputFileName);
+                Files.write(outputPath, vmCode, Charset.defaultCharset());
+            } catch (IOException e) {
+                System.out.println("Issue encountered writing output file for: " + outputFileName);
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
