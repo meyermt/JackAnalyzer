@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.util.*;
 
 /**
- * Compiles tokenized elements into fully layered xml components ready to create vm files.
+ * Compiles tokenized elements into fully runnable vm code.
  * Created by michaelmeyer on 2/24/17.
  */
 public class CompilationEngine {
